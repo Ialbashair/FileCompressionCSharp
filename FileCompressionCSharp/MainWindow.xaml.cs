@@ -24,5 +24,20 @@ namespace FileCompressionCSharp
         {
             InitializeComponent();
         }
+
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Window_Drop_1(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Window_DragOver(object sender, DragEventArgs e)
+        {
+
+        }
     }
 }
