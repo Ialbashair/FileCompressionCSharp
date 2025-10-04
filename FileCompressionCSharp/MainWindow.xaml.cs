@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using LogicLayerInterface;
+using DataObjects; 
 
 namespace FileCompressionCSharp
 {
@@ -21,11 +12,13 @@ namespace FileCompressionCSharp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly IArchiveTypeChecker _checker;
         private string selectedPath = string.Empty;
         private bool fileSelected = false;
-        public MainWindow()
+        public MainWindow(IArchiveTypeChecker checker)
         {
             InitializeComponent();
+            _checker = checker;
         }
 
 
@@ -71,14 +64,14 @@ namespace FileCompressionCSharp
                 SelectedPath.Text = selectedPath;
                 fileSelected = true;
             }
-            else 
+            else
             {
                 fileSelected = false;
             }
 
             if (fileSelected)
             {
-                ActivateButtons(false);
+                FlipButtons(false);
             }
         }
 
@@ -91,7 +84,7 @@ namespace FileCompressionCSharp
             {
                 SelectedPath.Text = "No file/folder selected";
 
-                // Create a *new* unfrozen brush each time
+                // Create a new unfrozen brush each time
                 var brush = new SolidColorBrush(Colors.Red);
                 SelectedPath.Foreground = brush;
 
@@ -107,12 +100,12 @@ namespace FileCompressionCSharp
             {
                 selectedPath = string.Empty;
                 SelectedPath.Text = "No file/folder selected";
-                ActivateButtons(true);
+                FlipButtons(true);
             }
 
         }
 
-        private void Compress_Click(object sender, RoutedEventArgs e) 
+        private void Compress_Click(object sender, RoutedEventArgs e)
         {
 
         }
@@ -125,33 +118,55 @@ namespace FileCompressionCSharp
         // Last Modified: N/A
         // Description: Handles window loaded events
         private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            #region Buttons
-            ActivateButtons(true);           
-            #endregion
+        {            
+            FlipButtons(true);
         }
+        
 
-        bool IsZip(string path) // NEEDS WORK
+        // Date Created: 10/3/2025 10:22 PM
+        // Last Modified: N/A
+        // Description: Handles enabling/disabling buttons based on file selection and type
+        private void FlipButtons(bool active)
         {
-           /* byte[] header = new byte[4];
-            using (var stream = File.OpenRead(path))
+            if (active)
             {
-                stream.Read(header, 0, header.Length);
-            }
-
-            return header[0] == 0x50 && header[1] == 0x4B && header[2] == 0x03 && header[3] == 0x04;*/
-        }
-
-        private void ActivateButtons(bool Active) 
-        {
-            if (Active)
-            {
-                // Compress button
+                // Disable Compress button
                 btnCompress.IsEnabled = false;
                 btnCompress.Foreground = Brushes.DarkGray;
                 btnCompress.Opacity = 0.5;
                 btnCompress.ToolTip = "A File must be selected";
-                // Decompress button
+                
+                // Disable Decompress button
+                btnDecompress.IsEnabled = false;
+                btnDecompress.Foreground = Brushes.DarkGray;
+                btnDecompress.Opacity = 0.5;
+                btnDecompress.ToolTip = "A File must be selected";
+
+            }
+            else if (!active && !_checker.GetArchiveType(selectedPath).Equals(enums.ArchiveType.None))
+            {
+                // Enable Decompress button
+                btnDecompress.IsEnabled = true;
+                btnDecompress.Foreground = Brushes.White;
+                btnDecompress.Opacity = 1.0;
+                btnDecompress.ToolTip = null;
+
+                // Disable Compress button
+                btnCompress.IsEnabled = false;
+                btnCompress.Foreground = Brushes.DarkGray;
+                btnCompress.Opacity = 0.5;
+                btnCompress.ToolTip = "A File must be selected";
+
+            }
+            else if (!active && _checker.GetArchiveType(selectedPath).Equals(enums.ArchiveType.None))
+            {
+                // Enable Compress button
+                btnCompress.IsEnabled = true;
+                btnCompress.Foreground = Brushes.White;
+                btnCompress.Opacity = 1.0;
+                btnCompress.ToolTip = null;
+
+                // Disable Decompress button
                 btnDecompress.IsEnabled = false;
                 btnDecompress.Foreground = Brushes.DarkGray;
                 btnDecompress.Opacity = 0.5;
@@ -159,16 +174,17 @@ namespace FileCompressionCSharp
             }
             else
             {
-                // Enable Compress button
-                btnCompress.IsEnabled = true;
-                btnCompress.Foreground = Brushes.White;
-                btnCompress.Opacity = 1.0;
-                btnCompress.ToolTip = null;
                 // Enable Decompress button
                 btnDecompress.IsEnabled = true;
                 btnDecompress.Foreground = Brushes.White;
                 btnDecompress.Opacity = 1.0;
                 btnDecompress.ToolTip = null;
+
+                // Enable Compress button
+                btnCompress.IsEnabled = true;
+                btnCompress.Foreground = Brushes.White;
+                btnCompress.Opacity = 1.0;
+                btnCompress.ToolTip = null;
             }
         }
     }
