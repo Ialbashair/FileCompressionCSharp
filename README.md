@@ -46,56 +46,6 @@ To get started with the `FileCompressionCSharp` project:
 
    Execute the application to start compressing and decompressing files.
 
-## Usage
-
-To utilize the compression functionalities in your application:
-
-1. **Reference the Project**:
-
-   Add a reference to the `FileCompressionCSharp` project in your application.
-
-2. **Instantiate the Compression Service**:
-
-   ```csharp
-   var compressionService = new CompressionService();
-   ```
-
-3. **Compress a File**:
-
-   ```csharp
-   compressionService.Compress("path/to/input/file", "path/to/output/compressedfile");
-   ```
-
-4. **Decompress a File**:
-
-   ```csharp
-   compressionService.Decompress("path/to/compressed/file", "path/to/output/decompressedfile");
-   ```
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. **Fork the Repository**:
-
-   Create a fork of the repository to your GitHub account.
-
-2. **Create a New Branch**:
-
-   Create a new branch for your feature or bug fix.
-
-3. **Implement Changes**:
-
-   Implement your changes and write corresponding unit tests.
-
-4. **Run Tests**:
-
-   Ensure all tests pass to maintain code quality.
-
-5. **Submit a Pull Request**:
-
-   Submit a pull request detailing your changes for review.
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
