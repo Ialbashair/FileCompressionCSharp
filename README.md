@@ -5,9 +5,6 @@ A simple file compression program developed in C# to efficiently compress and de
 ## Project Overview
 
 The `FileCompressionCSharp` project provides a straightforward implementation of file compression and decompression functionalities. The user may choose from 3 different compression algorithims.
-- **Sliding Window (LZ77/LZ78)**:
-- **Huffman Algorithm**:
-- **Sliding Window AND Huffman**:
 
 ## Features
 
