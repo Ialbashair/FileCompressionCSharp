@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LogicLayer</RootNamespace>
     <AssemblyName>LogicLayer</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,7 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveTypeChecker.cs" />
+    <Compile Include="Huffman.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="Window.cs" />
+    <Compile Include="WindowHuffman.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

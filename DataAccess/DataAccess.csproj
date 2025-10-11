@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A717AE01-2663-4928-9B03-13DB79FEEE67}</ProjectGuid>
+    <ProjectGuid>{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LogicLayerAccessor</RootNamespace>
-    <AssemblyName>LogicLayerAccessor</AssemblyName>
+    <RootNamespace>DataAccess</RootNamespace>
+    <AssemblyName>DataAccess</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,14 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IArchiveTypeChecker.cs" />
-    <Compile Include="IHuffman.cs" />
+    <Compile Include="FileReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DataObjects\DataObjects.csproj">
-      <Project>{111417bd-4e71-4e96-b1dc-badbd30d34a2}</Project>
-      <Name>DataObjects</Name>
+    <ProjectReference Include="..\DataAccessInterface\DataAccessInterface.csproj">
+      <Project>{c1815d72-040d-4690-9dae-d2463466076e}</Project>
+      <Name>DataAccessInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

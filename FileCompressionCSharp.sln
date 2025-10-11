@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicLayerInterface", "Logi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTesting", "UnitTesting\UnitTesting.csproj", "{BAB328F4-99E5-481E-B26D-7652CC00764A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessInterface", "DataAccessInterface\DataAccessInterface.csproj", "{C1815D72-040D-4690-9DAE-D2463466076E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{BAB328F4-99E5-481E-B26D-7652CC00764A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAB328F4-99E5-481E-B26D-7652CC00764A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAB328F4-99E5-481E-B26D-7652CC00764A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1815D72-040D-4690-9DAE-D2463466076E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1815D72-040D-4690-9DAE-D2463466076E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1815D72-040D-4690-9DAE-D2463466076E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1815D72-040D-4690-9DAE-D2463466076E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
