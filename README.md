@@ -16,7 +16,7 @@ The `FileCompressionCSharp` project provides a straightforward implementation of
    * **Huffman Algorithm**: Uses frequency-based encoding to reduce file size efficiently.
    * **Sliding Window AND Huffman**: Combines both methods to maximize compression efficiency and reduce redundancy.    
 - **Decompression Support**: Allows for the decompression of files back to their original state.
-- **Simple Interface**: Provides an intuitive API for integrating compression functionalities into applications.
+- **Simple Design**: Provides an intuitive UI, With effortless features such as Drag and Drop.
 - **Cross-Platform Compatibility**: Designed to work seamlessly across different platforms supported by .NET.
 
 ## Project Structure
@@ -26,7 +26,7 @@ The repository is organized into the following key components:
 - **FileCompressionCSharp**: Acts as the presentation layer and provides a simple and intuitive UI. 
 - **LogicLayer**: Implements the core logic for compression/decompression algorithms.
 - **LogicLayerAccessor**: Provides access to the logic layer, facilitating interaction with other components.
-- **DataObjects**: Defines data models representing the structure of compressed files and related metadata.
+- **DataObjects**: Defines data models and related metadata.
 - **UnitTesting**: Includes unit tests to validate the functionality and reliability of the application.
 
 ## Getting Started
