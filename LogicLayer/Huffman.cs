@@ -41,7 +41,8 @@ namespace LogicLayer
         // Build Huffman tree from frequency table
         private Node BuildTree(Dictionary<byte, int> freq) 
         {
-            var priorityQueue = new Utils.SimplePriorityQueue<Node>();
+            // PriorityQueue can be used in newer versions of C#. this is a manual implementation of a simple priority queue
+            var priorityQueue = new Utils.SimplePriorityQueue<Node>(); 
 
             foreach (var kvp in freq) 
             {
@@ -126,6 +127,12 @@ namespace LogicLayer
 
         public byte[] Compress(byte[] inputData)
         {
+            // Handle empty input
+            if (inputData == null || inputData.Length == 0) 
+            {
+                return Array.Empty<byte>();
+            }
+
             var frequencyTable = BuildFrequencyTable(inputData);
             var huffmanTree = BuildTree(frequencyTable);
             var codes = BuildCodeTable(huffmanTree);
