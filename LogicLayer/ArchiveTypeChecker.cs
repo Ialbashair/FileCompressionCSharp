@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static DataObjects.enums;
+using DataObjects;
 using LogicLayerInterface;
 
 
@@ -90,7 +90,7 @@ namespace LogicLayer
             {
                 return ArchiveType.Tar;
             }
-
+            
             // if no supported signature is found.
             return ArchiveType.None;
         }

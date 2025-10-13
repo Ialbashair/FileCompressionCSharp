@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -124,6 +125,43 @@ namespace LogicLayer
 
             return output;
         }
+        // Write compressed data to a file with error handling
+        public bool WriteCompressedFile(byte[] compressedData, string outputPath) 
+        {
+            bool success = false;
+
+            try
+            {
+                // Check if directory exists, if not create it
+                string directory = Path.GetDirectoryName(outputPath);
+                if (directory != null && !Directory.Exists(directory)) 
+                {
+                    Directory.CreateDirectory(directory); // Create.
+                }
+
+                // Write file data.
+                File.WriteAllBytes(outputPath, compressedData);
+                success = true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new Exception("Permission denied at this write location.");
+            }
+            catch (DirectoryNotFoundException) // This should not occur due to the directory creation step, but just in case.
+            {
+                throw new Exception("The specified directory was not found.");
+            }
+            catch (IOException ioEx) 
+            {
+                throw new Exception($"An I/O error occurred: {ioEx.Message}");
+            }
+            catch (Exception ex) 
+            {
+                throw new Exception($"An unexpected error occurred: {ex.Message}");
+            }
+
+            return success;
+        }
 
         public byte[] Compress(byte[] inputData)
         {
@@ -144,8 +182,6 @@ namespace LogicLayer
         public byte[] Decompress(byte[] CompressedData)
         {
             throw new NotImplementedException();
-        }
-
-        
+        }        
     }
 }

@@ -22,9 +22,9 @@
         <!-- Drop Zone and Path Display-->
         <Border Grid.Row="1" BorderBrush="#007ACC" BorderThickness="2" CornerRadius="10"
                 Background="#2D2D30" Padding="20" AllowDrop="True"
-                Drop="Window_Drop" DragOver="Window_DragOver">
+                Drop="Window_Drop" DragOver="Window_DragOver" Margin=" 0 0 180 0">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Margin="0 10 0 10" Text="Drag and Drop a File or Folder here."
+                <TextBlock Margin="0 10 0 0" Text="Drag and Drop a File or Folder here."
                            Foreground="LightGray" FontSize="16" HorizontalAlignment="Center" />
                 <TextBlock  Margin="0 10 0 10" Text="OR" Foreground="LightGray" FontSize="16" HorizontalAlignment="Center" />
                 <Button  Margin=" 0 10 0 10" Content="Browse..." Width="120" Height="35" Background="#007ACC" Foreground="White" FontWeight="Bold" Click="Browse_Click"/>
@@ -33,6 +33,27 @@
                         <SolidColorBrush  x:Name="SelectedPathBrush" Color="LightGray"/>
                     </TextBlock.Foreground>
                 </TextBlock>
+            </StackPanel>
+        </Border>
+        
+        <Border Grid.Row="1" BorderBrush="#007ACC" BorderThickness="2" CornerRadius="10"
+        Background="#2D2D30" Padding="20" AllowDrop="True"
+        Drop="Window_Drop" DragOver="Window_DragOver" Margin="485 0 0 0">
+            <StackPanel IsEnabled="True" HorizontalAlignment="Center" >
+                <TextBlock Margin="0 10 0 0" Text="Select Algorithm"
+                    Foreground="LightGray" FontSize="14" HorizontalAlignment="Center"  VerticalAlignment="Top"/>
+
+                <ToggleButton x:Name="btnHuffman" Content="Huffman" Checked="btnHuffman_Checked"
+                  Width="100" Height="30" Margin="15 30 15 15" Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="11"/>
+
+
+                <ToggleButton x:Name="btnSlidingWindow" Content="Sliding Window" Checked="btnSlidingWindow_Checked"
+                  Width="100" Height="30" Margin="15"  Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="10"/>
+
+                <ToggleButton x:Name="btnBoth" Content="Both" Checked="btnBoth_Checked"
+                  Width="100" Height="30" Margin="15" Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="10"/>
+
+
 
             </StackPanel>
         </Border>

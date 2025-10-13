@@ -9,6 +9,6 @@ namespace LogicLayerInterface
 {
     public interface IArchiveTypeChecker
     {
-        enums.ArchiveType GetArchiveType(string filePath);
+        ArchiveType GetArchiveType(string filePath);
     }
 }

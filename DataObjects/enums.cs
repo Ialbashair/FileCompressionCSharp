@@ -6,18 +6,27 @@ using System.Threading.Tasks;
 
 namespace DataObjects
 {
-    public class enums
+    public enum ArchiveType
     {
-        public enum ArchiveType
+        None,
+        Huffman,
+        Zip,
+        Rar,
+        SevenZip,
+        Tar,
+        GZip,
+        BZip2,
+        XZ        
+    }
+    public static class ArchiveTypeExtensions
+    {
+        public static string GetExtension(this ArchiveType type)
         {
-            None,
-            Zip,
-            Rar,
-            SevenZip,
-            Tar,
-            GZip,
-            BZip2,
-            XZ
+            switch (type)
+            {                
+                case ArchiveType.Huffman: return ".huff";
+                default: return string.Empty;
+            }
         }
     }
 }

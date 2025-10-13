@@ -3,7 +3,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using LogicLayerInterface;
-using DataObjects; 
+using DataObjects;
+using System.IO;
 
 namespace FileCompressionCSharp
 {
@@ -14,13 +15,24 @@ namespace FileCompressionCSharp
     {
         private readonly IArchiveTypeChecker _checker;
         private string selectedPath = string.Empty;
-        private bool fileSelected = false;
+        private bool fileSelected = false;        
+        private ArchiveType algorithim = ArchiveType.None;
         public MainWindow(IArchiveTypeChecker checker)
         {
             InitializeComponent();
             _checker = checker;
         }
 
+        // Date Created: 10/13/2025 5:05 PM
+        // Last Modified: N/A
+        // Description: Creates output path based on input path and archive type
+        public void CreateOutputPath(string inputPath, ArchiveType type)
+        {
+            inputPath = selectedPath;
+            string directory = Path.GetDirectoryName(inputPath);
+            string baseName = Path.GetFileNameWithoutExtension(inputPath);
+            string outputPath = Path.Combine(directory,baseName + ArchiveTypeExtensions.GetExtension(algorithim));
+        }
 
         // Date Created: 9/28/2025 11:06:00 PM
         // Last Modified: N/A
@@ -143,7 +155,7 @@ namespace FileCompressionCSharp
                 btnDecompress.ToolTip = "A File must be selected";
 
             }
-            else if (!active && !_checker.GetArchiveType(selectedPath).Equals(enums.ArchiveType.None))
+            else if (!active && !_checker.GetArchiveType(selectedPath).Equals(ArchiveType.None))
             {
                 // Enable Decompress button
                 btnDecompress.IsEnabled = true;
@@ -158,7 +170,7 @@ namespace FileCompressionCSharp
                 btnCompress.ToolTip = "A File must be selected";
 
             }
-            else if (!active && _checker.GetArchiveType(selectedPath).Equals(enums.ArchiveType.None))
+            else if (!active && _checker.GetArchiveType(selectedPath).Equals(ArchiveType.None))
             {
                 // Enable Compress button
                 btnCompress.IsEnabled = true;
@@ -186,6 +198,27 @@ namespace FileCompressionCSharp
                 btnCompress.Opacity = 1.0;
                 btnCompress.ToolTip = null;
             }
+        }
+
+        // Algorithm check - RadioButtonEvents
+        private void btnHuffman_Checked(object sender, RoutedEventArgs e)
+        {
+            btnBoth.IsChecked = false;
+            btnSlidingWindow.IsChecked = false;
+            
+            btnHuffman.Background = Brushes.DarkGray;
+        }
+
+        private void btnSlidingWindow_Checked(object sender, RoutedEventArgs e)
+        {
+            btnBoth.IsChecked = false;
+            btnHuffman.IsChecked = false;
+        }
+
+        private void btnBoth_Checked(object sender, RoutedEventArgs e)
+        {
+            btnHuffman.IsChecked = false;
+            btnSlidingWindow.IsChecked = false;
         }
     }
 }

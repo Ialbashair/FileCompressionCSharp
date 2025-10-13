@@ -5,6 +5,7 @@ namespace LogicLayer
 {
     public class Utils
     {
+        // Simple custom made priority queue implementation - Used because PriorityQueue is not available in C# 7.3
         public class SimplePriorityQueue<T>
         {
             private readonly List<Tuple<T, int>> _elements = new List<Tuple<T, int>>();
