@@ -21,6 +21,7 @@ namespace FileCompressionCSharp
         {
             InitializeComponent();
             _checker = checker;
+            ResetAlgorithmSelection();
         }
 
         // Date Created: 10/13/2025 5:05 PM
@@ -28,6 +29,11 @@ namespace FileCompressionCSharp
         // Description: Creates output path based on input path and archive type
         public void CreateOutputPath(string inputPath, ArchiveType type)
         {
+            if (algorithim == ArchiveType.None) 
+            {
+                MessageBox.Show("Please select a valid compression algorithm.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             inputPath = selectedPath;
             string directory = Path.GetDirectoryName(inputPath);
             string baseName = Path.GetFileNameWithoutExtension(inputPath);
@@ -59,6 +65,26 @@ namespace FileCompressionCSharp
             e.Handled = true;
         }
 
+
+        public void ResetAlgorithmSelection()
+        {
+            algorithim = ArchiveType.None;
+
+            btnBoth.IsEnabled = false;
+            btnBoth.IsChecked = false;
+            btnBoth.Foreground = Brushes.DarkGray;
+            btnBoth.Opacity = 0.5;
+
+            btnHuffman.IsEnabled = false;
+            btnHuffman.IsChecked = false;
+            btnHuffman.Foreground = Brushes.DarkGray;
+            btnHuffman.Opacity = 0.5;
+
+            btnSlidingWindow.IsEnabled = false;
+            btnSlidingWindow.IsChecked = false;
+            btnSlidingWindow.Foreground = Brushes.DarkGray;
+            btnSlidingWindow.Opacity = 0.5;
+        }
         // Date Created: 9/28/2025 11:06:00 PM
         // Last Modified: N/A
         // Description: Handles the Browse button click to open a file dialog
@@ -82,7 +108,8 @@ namespace FileCompressionCSharp
             }
 
             if (fileSelected)
-            {
+            {                
+                ResetAlgorithmSelection(); // Reset algorithm selection
                 FlipButtons(false);
             }
         }
@@ -112,6 +139,11 @@ namespace FileCompressionCSharp
             {
                 selectedPath = string.Empty;
                 SelectedPath.Text = "No file/folder selected";
+                btnBoth.IsChecked = false;
+                btnHuffman.IsChecked = false;
+                btnSlidingWindow.IsChecked = false;
+                ResetAlgorithmSelection();
+                algorithim = ArchiveType.None;
                 FlipButtons(true);
             }
 
@@ -133,92 +165,141 @@ namespace FileCompressionCSharp
         {            
             FlipButtons(true);
         }
-        
+
 
         // Date Created: 10/3/2025 10:22 PM
-        // Last Modified: N/A
+        // Last Modified: 10/13/20205 5:15 PM - Refactored to use ArchiveTypeChecker and handle Algorithm selection state
         // Description: Handles enabling/disabling buttons based on file selection and type
         private void FlipButtons(bool active)
         {
+            // If inactive flag means "no file selected" -> disable both
             if (active)
             {
-                // Disable Compress button
+                // Disable both buttons and show tooltips
                 btnCompress.IsEnabled = false;
                 btnCompress.Foreground = Brushes.DarkGray;
                 btnCompress.Opacity = 0.5;
-                btnCompress.ToolTip = "A File must be selected";
-                
-                // Disable Decompress button
+                btnCompress.ToolTip = "A file must be selected";
+
                 btnDecompress.IsEnabled = false;
                 btnDecompress.Foreground = Brushes.DarkGray;
                 btnDecompress.Opacity = 0.5;
-                btnDecompress.ToolTip = "A File must be selected";
+                btnDecompress.ToolTip = "A file must be selected";
 
+                // When no file selected, algorithm panel should be disabled
+                ResetAlgorithmSelection();
+                return;
             }
-            else if (!active && !_checker.GetArchiveType(selectedPath).Equals(ArchiveType.None))
+
+            // At this point, active == false means a file *has been* selected.
+            // Guard: ensure we have a path
+            if (string.IsNullOrEmpty(selectedPath) || !File.Exists(selectedPath))
             {
-                // Enable Decompress button
+                // treat as no file selected
+                btnCompress.IsEnabled = false;
+                btnDecompress.IsEnabled = false;
+                ResetAlgorithmSelection();
+                return;
+            }
+
+            // Get archive type once
+            ArchiveType fileType = _checker.GetArchiveType(selectedPath);
+
+            // If the checker says the file *is an archive* we should enable Decompress only
+            if (fileType != ArchiveType.None)
+            {
                 btnDecompress.IsEnabled = true;
                 btnDecompress.Foreground = Brushes.White;
                 btnDecompress.Opacity = 1.0;
                 btnDecompress.ToolTip = null;
 
-                // Disable Compress button
                 btnCompress.IsEnabled = false;
                 btnCompress.Foreground = Brushes.DarkGray;
                 btnCompress.Opacity = 0.5;
-                btnCompress.ToolTip = "A File must be selected";
+                btnCompress.ToolTip = "File is already an archive";
 
+                // When file is an archive, user shouldn't change algorithm for compression
+                ResetAlgorithmSelection();
+
+                // Reset algorithm selection (optional)
+                // algorithim = ArchiveType.None;
+
+                return;
             }
-            else if (!active && _checker.GetArchiveType(selectedPath).Equals(ArchiveType.None))
+
+            // fileType == None -> file is NOT a recognized archive
+            // If an algorithm is selected, enable Compress; else keep both disabled and allow algorithm selection
+            btnSlidingWindow.IsEnabled = true;
+            btnSlidingWindow.Foreground = Brushes.White;
+            btnSlidingWindow.Opacity = 1.0;
+            btnHuffman.IsEnabled = true;
+            btnHuffman.Foreground = Brushes.White;
+            btnHuffman.Opacity = 1.0;
+            btnBoth.IsEnabled = true;
+            btnBoth.Foreground = Brushes.White;
+            btnBoth.Opacity = 1.0;
+
+
+            if (algorithim != ArchiveType.None)
             {
-                // Enable Compress button
                 btnCompress.IsEnabled = true;
                 btnCompress.Foreground = Brushes.White;
                 btnCompress.Opacity = 1.0;
                 btnCompress.ToolTip = null;
-
-                // Disable Decompress button
-                btnDecompress.IsEnabled = false;
-                btnDecompress.Foreground = Brushes.DarkGray;
-                btnDecompress.Opacity = 0.5;
-                btnDecompress.ToolTip = "A File must be selected";
             }
             else
             {
-                // Enable Decompress button
-                btnDecompress.IsEnabled = true;
-                btnDecompress.Foreground = Brushes.White;
-                btnDecompress.Opacity = 1.0;
-                btnDecompress.ToolTip = null;
-
-                // Enable Compress button
-                btnCompress.IsEnabled = true;
-                btnCompress.Foreground = Brushes.White;
-                btnCompress.Opacity = 1.0;
-                btnCompress.ToolTip = null;
+                btnCompress.IsEnabled = false;
+                btnCompress.Foreground = Brushes.DarkGray;
+                btnCompress.Opacity = 0.5;
+                btnCompress.ToolTip = "Select a compression algorithm";
             }
+
+            // Ensure Decompress is disabled for non-archive files
+            btnDecompress.IsEnabled = false;
+            btnDecompress.Foreground = Brushes.DarkGray;
+            btnDecompress.Opacity = 0.5;
+            btnDecompress.ToolTip = "Not an archive file";
         }
+
 
         // Algorithm check - RadioButtonEvents
         private void btnHuffman_Checked(object sender, RoutedEventArgs e)
         {
             btnBoth.IsChecked = false;
             btnSlidingWindow.IsChecked = false;
-            
-            btnHuffman.Background = Brushes.DarkGray;
+
+            algorithim = ArchiveType.Huffman;            
+
+            // Enable Compress button
+            btnCompress.IsEnabled = true;
+            btnCompress.Foreground = Brushes.White;
+            btnCompress.Opacity = 1.0;
+            btnCompress.ToolTip = null;
         }
 
         private void btnSlidingWindow_Checked(object sender, RoutedEventArgs e)
         {
             btnBoth.IsChecked = false;
             btnHuffman.IsChecked = false;
+
+            // Enable Compress button
+            btnCompress.IsEnabled = true;
+            btnCompress.Foreground = Brushes.White;
+            btnCompress.Opacity = 1.0;
+            btnCompress.ToolTip = null;
         }
 
         private void btnBoth_Checked(object sender, RoutedEventArgs e)
         {
             btnHuffman.IsChecked = false;
             btnSlidingWindow.IsChecked = false;
+
+            // Enable Compress button
+            btnCompress.IsEnabled = true;
+            btnCompress.Foreground = Brushes.White;
+            btnCompress.Opacity = 1.0;
+            btnCompress.ToolTip = null;
         }
     }
 }
