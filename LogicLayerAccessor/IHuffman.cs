@@ -9,6 +9,6 @@ namespace LogicLayerInterface
     public interface IHuffman
     {
         bool Compress(string inputPath, string outputPath);
-        byte[] Decompress(byte[] CompressedData);
+        bool Decompress(string inputPath);
     }
 }
