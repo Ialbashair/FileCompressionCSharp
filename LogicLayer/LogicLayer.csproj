@@ -53,6 +53,14 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DataAccessInterface\DataAccessInterface.csproj">
+      <Project>{c1815d72-040d-4690-9dae-d2463466076e}</Project>
+      <Name>DataAccessInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj">
+      <Project>{1C77B06E-BD74-4BAA-8669-E0B3C02EB71A}</Project>
+      <Name>DataAccess</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DataObjects\DataObjects.csproj">
       <Project>{111417bd-4e71-4e96-b1dc-badbd30d34a2}</Project>
       <Name>DataObjects</Name>

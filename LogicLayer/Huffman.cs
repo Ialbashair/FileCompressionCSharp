@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LogicLayerInterface;
+using DataAccessInterface;
+using DataAccess;
 
 namespace LogicLayer
 {
@@ -21,7 +23,17 @@ namespace LogicLayer
             public bool IsLeaf => Left == null && Right == null;
         }
 
+        FileReaderInterface _fileReader;
 
+        public Huffman() 
+        {
+            _fileReader = new FileReader();
+        }
+
+        public Huffman(FileReaderInterface fileReader) 
+        {
+            _fileReader = fileReader;
+        }
 
         // Build frequency table from input data
         private Dictionary<byte, int> BuildFrequencyTable(byte[] data)
@@ -161,22 +173,29 @@ namespace LogicLayer
             }
 
             return success;
-        }
+        }        
 
-        public byte[] Compress(byte[] inputData)
+        public bool Compress(string filePath, string outputPath)
         {
-            // Handle empty input
-            if (inputData == null || inputData.Length == 0) 
+
+            byte[] inputData;
+            try
             {
-                return Array.Empty<byte>();
+                inputData = _fileReader.FileToByteArray(filePath);                
             }
+            catch (Exception e)
+            {
+
+                throw new ApplicationException("Failed to get file byte array.");
+            }            
 
             var frequencyTable = BuildFrequencyTable(inputData);
             var huffmanTree = BuildTree(frequencyTable);
             var codes = BuildCodeTable(huffmanTree);
             var compressedData = EncodeDate(inputData, codes);
+            var writeSuccess = WriteCompressedFile(compressedData, outputPath);
 
-            return compressedData;
+            return writeSuccess;
         }
 
         public byte[] Decompress(byte[] CompressedData)

@@ -1,28 +1,32 @@
-﻿using LogicLayerInterface;
+﻿using LogicLayer;
+using LogicLayerInterface;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using LogicLayer;
-
 
 namespace FileCompressionCSharp
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        private ServiceProvider _serviceProvider;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            IArchiveTypeChecker checker = new ArchiveTypeChecker(); // LogicLayer implementation
+            var services = new ServiceCollection();
 
-            var mainWindow = new MainWindow(checker);
+            // Register interfaces and their implementations
+            services.AddSingleton<IArchiveTypeChecker, ArchiveTypeChecker>();
+            services.AddSingleton<IHuffman, Huffman>();
+
+            // Register your MainWindow with its dependencies
+            services.AddSingleton<MainWindow>();
+
+            _serviceProvider = services.BuildServiceProvider();
+
+            // Retrieve and show the main window
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
         }
     }

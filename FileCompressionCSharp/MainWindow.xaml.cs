@@ -5,6 +5,8 @@ using System.Windows.Media.Animation;
 using LogicLayerInterface;
 using DataObjects;
 using System.IO;
+using System.Runtime.CompilerServices;
+
 
 namespace FileCompressionCSharp
 {
@@ -13,31 +15,36 @@ namespace FileCompressionCSharp
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly IArchiveTypeChecker _checker;
+        private readonly IArchiveTypeChecker _checker = null;
         private string selectedPath = string.Empty;
         private bool fileSelected = false;        
         private ArchiveType algorithim = ArchiveType.None;
-        public MainWindow(IArchiveTypeChecker checker)
+        private IHuffman _huffman = null;
+        public MainWindow(IArchiveTypeChecker checker, IHuffman huffman)
         {
             InitializeComponent();
-            _checker = checker;
+            _checker = checker;           
+            _huffman = huffman; // Assuming Huffman implements IHuffman
+
             ResetAlgorithmSelection();
         }
 
         // Date Created: 10/13/2025 5:05 PM
         // Last Modified: N/A
         // Description: Creates output path based on input path and archive type
-        public void CreateOutputPath(string inputPath, ArchiveType type)
+        public string CreateOutputPath(string inputPath, ArchiveType type)
         {
             if (algorithim == ArchiveType.None) 
             {
                 MessageBox.Show("Please select a valid compression algorithm.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                return string.Empty;
             }
             inputPath = selectedPath;
             string directory = Path.GetDirectoryName(inputPath);
             string baseName = Path.GetFileNameWithoutExtension(inputPath);
             string outputPath = Path.Combine(directory,baseName + ArchiveTypeExtensions.GetExtension(algorithim));
+
+            return outputPath;
         }
 
         // Date Created: 9/28/2025 11:06:00 PM
@@ -73,7 +80,6 @@ namespace FileCompressionCSharp
             btnBoth.IsEnabled = false;
             btnBoth.IsChecked = false;
             btnBoth.Foreground = Brushes.DarkGray;
-            btnBoth.Opacity = 0.5;
 
             btnHuffman.IsEnabled = false;
             btnHuffman.IsChecked = false;
@@ -108,7 +114,8 @@ namespace FileCompressionCSharp
             }
 
             if (fileSelected)
-            {                
+            {         
+                SelectedPath.Foreground = Brushes.LightGray;
                 ResetAlgorithmSelection(); // Reset algorithm selection
                 FlipButtons(false);
             }
@@ -140,6 +147,7 @@ namespace FileCompressionCSharp
                 selectedPath = string.Empty;
                 SelectedPath.Text = "No file/folder selected";
                 btnBoth.IsChecked = false;
+                SelectedPath.Foreground = Brushes.LightGray;
                 btnHuffman.IsChecked = false;
                 btnSlidingWindow.IsChecked = false;
                 ResetAlgorithmSelection();
@@ -151,7 +159,23 @@ namespace FileCompressionCSharp
 
         private void Compress_Click(object sender, RoutedEventArgs e)
         {
+            string outputPath = CreateOutputPath(selectedPath, algorithim);
+            bool success = false;
+            try
+            {
+                success = _huffman.Compress(selectedPath, outputPath);
+            }
+            catch (Exception ex)
+            {
 
+                MessageBox.Show("Failed to compress file.", ex.Message);
+            }
+
+            if (success) 
+            {
+                SelectedPath.Foreground = Brushes.Green;
+                SelectedPath.Text = $"File compressed successfully to: {outputPath}";
+            }
         }
         private void Decompress_Click(object sender, RoutedEventArgs e)
         {
