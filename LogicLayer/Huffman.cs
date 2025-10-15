@@ -190,40 +190,26 @@ namespace LogicLayer
                 throw new ApplicationException("Failed to get file byte array." + e.Message);
             }
         }
-        public bool Compress(string filePath, string outputPath)
-        {          
-            byte[] inputData = LoadInputData(filePath);
-            var frequencyTable = BuildFrequencyTable(inputData);
-            var huffmanTree = BuildTree(frequencyTable);
-            var codes = BuildCodeTable(huffmanTree);
-            var compressedData = EncodeData(inputData, codes);
 
-            // Serialize frequency table and tree structure to file for decompression
-            var header = SerializeFrequencyTable(frequencyTable);
-
-            // Combine header and compressed data
-            byte[] combinedData = new byte[header.Length + compressedData.Length];
-            Buffer.BlockCopy(header, 0, combinedData, 0, header.Length);
-            Buffer.BlockCopy(compressedData, 0, combinedData, header.Length, compressedData.Length);
-
-            // finally write to file
-            var writeSuccess = WriteCompressedFile(compressedData, outputPath);
-            return writeSuccess;
-        }
-
-        private Dictionary<byte, int> DeserializeFrequencyTable(BinaryReader reader)
+        private Dictionary<byte, int> DeserializeFrequencyTable(byte[] data)
         {
-            int count = reader.ReadInt32();
-            var frq = new Dictionary<byte, int>();
+            var table = new Dictionary<byte, int>();
 
-            for (int i = 0; i < count; i++)
+            using (var ms = new MemoryStream(data))
+            using (var reader = new BinaryReader(ms))
             {
-                byte symbol = reader.ReadByte();
-                int frequency = reader.ReadInt32();
-                frq[symbol] = frequency;
+                int count = reader.ReadInt32(); // number of entries
+                for (int i = 0; i < count; i++)
+                {
+                    byte symbol = reader.ReadByte();
+                    int frequency = reader.ReadInt32();
+                    table[symbol] = frequency;
+                }
             }
-            return frq;
+
+            return table;
         }
+
         private byte[] SerializeFrequencyTable(Dictionary<byte, int> frq)
         {
             using (var ms = new MemoryStream())
@@ -238,54 +224,10 @@ namespace LogicLayer
                 return ms.ToArray();
             }
         }
-        public bool Decompress(string filePath)
-        {
-            byte[] compressedData = LoadInputData(filePath);
-
-            using (var ms = new MemoryStream(compressedData))
-            using (var reader = new BinaryReader(ms))
-            {
-                // Step 1: Read frequency table from header
-                var freqTable = DeserializeFrequencyTable(reader);
-
-                // Step 2: Rebuild Huffman tree
-                var root = BuildTree(freqTable);
-
-                // Step 3: Read the rest of the data as bit stream
-                var remainingBytes = reader.ReadBytes((int)(ms.Length - ms.Position));
-                var bitString = new StringBuilder();
-
-                foreach (byte b in remainingBytes)
-                {
-                    for (int i = 7; i >= 0; i--)
-                    {
-                        bitString.Append((b & (1 << i)) != 0 ? '1' : '0');
-                    }
-                }
-
-                // Step 4: Decode the bit string using the Huffman tree
-                var output = new List<byte>();
-                var current = root;
-
-                foreach (char bit in bitString.ToString())
-                {
-                    current = bit == '0' ? current.Left : current.Right;
-
-                    if (current.IsLeaf)
-                    {
-                        output.Add(current.Symbol.Value);
-                        current = root;
-                    }
-                }
-
-                // Step 5: Write file
-                var wrteSuccess = WriteDecompressedFile(filePath, output.ToArray());
-            }
-        }
 
         public bool WriteDecompressedFile(string outputPath, byte[] decompressedData)
         {
-            
+
             if (string.IsNullOrWhiteSpace(outputPath))
                 throw new ArgumentException("Output path cannot be null or empty.", nameof(outputPath));
 
@@ -301,9 +243,97 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-                throw new IOException("An error occurred while writing the decompressed file.", ex);               
+                throw new IOException("An error occurred while writing the decompressed file.", ex);
             }
             return success;
+        }
+
+        public bool Compress(string filePath, string outputPath)
+        {
+            byte[] inputData = LoadInputData(filePath);
+            var frequencyTable = BuildFrequencyTable(inputData);
+            var huffmanTree = BuildTree(frequencyTable);
+            var codes = BuildCodeTable(huffmanTree);
+            var compressedData = EncodeData(inputData, codes);
+
+            // Get file name
+            string fileName = Path.GetFileName(filePath);
+            byte[] fileNameBytes = Encoding.UTF8.GetBytes(fileName);
+            int nameLength = fileNameBytes.Length;
+
+            // Serialize frequency table
+            var freqTableBytes = SerializeFrequencyTable(frequencyTable);
+
+            // Combine headers
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms))
+            {
+                writer.Write(nameLength); // Length of file name
+                writer.Write(fileNameBytes); // File name
+                writer.Write(freqTableBytes.Length); // Length of frequency table                
+                writer.Write(freqTableBytes); // Frequency table
+                writer.Write(compressedData); // Compressed data
+
+                return WriteCompressedFile(ms.ToArray(), outputPath);
+            }
+
+            // Desired final layout:
+            // | Int32 FileNameLength | FileNameBytes | Int32 FreqTableLength | FreqTableBytes | CompressedData |
+        }
+
+        public bool Decompress(string filePath)
+        {
+            byte[] compressedData = LoadInputData(filePath);
+
+            using (var ms = new MemoryStream(compressedData))
+            using (var reader = new BinaryReader(ms))
+            {
+                // Read original file name
+                int nameLength = reader.ReadInt32();
+                string originalFileName = Encoding.UTF8.GetString(reader.ReadBytes(nameLength));
+
+                // Read frequency table
+                int freqTableLength = reader.ReadInt32();
+                byte[] freqTableBytes = reader.ReadBytes(freqTableLength);
+                var freqTable = DeserializeFrequencyTable(freqTableBytes);
+
+                // Rebuild Huffman tree
+                var root = BuildTree(freqTable);
+
+                // Remaining bytes = compressed data
+                var remainingBytes = reader.ReadBytes((int)(ms.Length - ms.Position));
+                var bitString = new StringBuilder();
+
+                foreach (byte b in remainingBytes)
+                {
+                    for (int i = 7; i >= 0; i--)
+                    {
+                        bitString.Append((b & (1 << i)) != 0 ? '1' : '0');
+                    }
+                }
+
+                // Decode bits using Huffman tree
+                var output = new List<byte>();
+                var current = root;
+
+                foreach (char bit in bitString.ToString())
+                {
+                    current = bit == '0' ? current.Left : current.Right;
+
+                    if (current.IsLeaf)
+                    {
+                        output.Add(current.Symbol.Value);
+                        current = root;
+                    }
+                }
+
+                // Build output path
+                string outputDir = Path.GetDirectoryName(filePath) ?? "";
+                string outputPath = Path.Combine(outputDir, originalFileName);
+
+                // Write decompressed data to file
+                return WriteDecompressedFile(outputPath, output.ToArray());
+            }
         }
     }    
 }            
