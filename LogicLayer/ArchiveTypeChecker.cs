@@ -23,6 +23,11 @@ namespace LogicLayer
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                 return ArchiveType.None;
 
+            string extension = Path.GetExtension(filePath)?.ToLowerInvariant();
+
+            if (extension == ".huff")
+                return ArchiveType.Huffman; // since .huff is not a standard archive format, we rely on extension
+
             byte[] header = new byte[512]; // read enough for TAR checks too
             using (var stream = File.OpenRead(filePath))
             {

@@ -176,7 +176,8 @@ namespace LogicLayer
 
             return success;
         }
-        
+
+        // Load input data from file with error handling
         public byte[] LoadInputData(string filePath)
         {
             byte[] inputData;
@@ -191,6 +192,7 @@ namespace LogicLayer
             }
         }
 
+        // Serialize and deserialize frequency table for storage in compressed file
         private Dictionary<byte, int> DeserializeFrequencyTable(byte[] data)
         {
             var table = new Dictionary<byte, int>();
@@ -210,6 +212,7 @@ namespace LogicLayer
             return table;
         }
 
+        // Serialize frequency table to byte array
         private byte[] SerializeFrequencyTable(Dictionary<byte, int> frq)
         {
             using (var ms = new MemoryStream())
@@ -224,7 +227,8 @@ namespace LogicLayer
                 return ms.ToArray();
             }
         }
-
+        
+        // Write decompressed data to a file with error handling
         public bool WriteDecompressedFile(string outputPath, byte[] decompressedData)
         {
 
@@ -248,6 +252,7 @@ namespace LogicLayer
             return success;
         }
 
+        // Main compress method
         public bool Compress(string filePath, string outputPath)
         {
             byte[] inputData = LoadInputData(filePath);
@@ -281,6 +286,7 @@ namespace LogicLayer
             // | Int32 FileNameLength | FileNameBytes | Int32 FreqTableLength | FreqTableBytes | CompressedData |
         }
 
+        // Main decompress method
         public bool Decompress(string filePath)
         {
             byte[] compressedData = LoadInputData(filePath);

@@ -179,7 +179,21 @@ namespace FileCompressionCSharp
         }
         private void Decompress_Click(object sender, RoutedEventArgs e)
         {
+            bool success = false;
+            try
+            {
+                success = _huffman.Decompress(selectedPath);
+            }
+            catch (Exception ex)
+            {
 
+                MessageBox.Show("Failed to decompress file.", ex.Message);
+            }
+            if (success)
+            {
+                SelectedPath.Foreground = Brushes.Green;
+                SelectedPath.Text = $"File Decompressed successfully to: {selectedPath}";
+            }        
         }
 
         // Date Created: 9/29/2025 7:45 PM
