@@ -22,8 +22,10 @@ The repository is organized into the following key components:
 
 - **FileCompressionCSharp**: Acts as the presentation layer and provides a simple and intuitive UI. 
 - **LogicLayer**: Implements the core logic for compression/decompression algorithms.
-- **LogicLayerAccessor**: Provides access to the logic layer, facilitating interaction with other components.
+- **LogicLayerAccessor**: Provides access to the logic layer, facilitating interactions with other layers.
 - **DataObjects**: Defines data models and related metadata.
+- **DataAccess**: A seperate layer to read/write to files.
+- **DataAccessInterface**: Provids access to the data access layer, facilitating intercations with other layers.
 - **UnitTesting**: Includes unit tests to validate the functionality and reliability of the application.
 
 ## Getting Started
