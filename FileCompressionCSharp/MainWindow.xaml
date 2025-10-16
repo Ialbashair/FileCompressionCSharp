@@ -50,16 +50,13 @@
                     Foreground="LightGray" FontSize="14" HorizontalAlignment="Center"  VerticalAlignment="Top"/>
 
                 <ToggleButton x:Name="btnHuffman" Content="Huffman" Checked="btnHuffman_Checked"
-                  Width="100" Height="30" Margin="15 30 15 15" Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="11"/>
-
+                  Width="100" Height="30" Margin="15 30 15 15" Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="10"/>
 
                 <ToggleButton x:Name="btnSlidingWindow" Content="Sliding Window" Checked="btnSlidingWindow_Checked"
                   Width="100" Height="30" Margin="15"  Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="10"/>
 
                 <ToggleButton x:Name="btnBoth" Content="Both" Checked="btnBoth_Checked"
                   Width="100" Height="30" Margin="15" Background="#007ACC" Foreground="White" FontWeight="Bold" FontSize="10"/>
-
-
 
             </StackPanel>
         </Border>

@@ -72,7 +72,9 @@ namespace FileCompressionCSharp
             e.Handled = true;
         }
 
-
+        // Date Created: 10/4/2025 3:23 PM
+        // Last Modified: N/A
+        // Description: Helps reset the algorithm selection state
         public void ResetAlgorithmSelection()
         {
             algorithim = ArchiveType.None;
@@ -80,6 +82,7 @@ namespace FileCompressionCSharp
             btnBoth.IsEnabled = false;
             btnBoth.IsChecked = false;
             btnBoth.Foreground = Brushes.DarkGray;
+            btnBoth.Opacity = 0.5;
 
             btnHuffman.IsEnabled = false;
             btnHuffman.IsChecked = false;
@@ -91,6 +94,7 @@ namespace FileCompressionCSharp
             btnSlidingWindow.Foreground = Brushes.DarkGray;
             btnSlidingWindow.Opacity = 0.5;
         }
+
         // Date Created: 9/28/2025 11:06:00 PM
         // Last Modified: N/A
         // Description: Handles the Browse button click to open a file dialog
@@ -157,6 +161,9 @@ namespace FileCompressionCSharp
 
         }
 
+        // Date Created: 10/6/2025 5:56 PM
+        // Last Modified: N/A
+        // Description: Handles the Compress button click to compress the selected file
         private void Compress_Click(object sender, RoutedEventArgs e)
         {
             string outputPath = CreateOutputPath(selectedPath, algorithim);
@@ -177,6 +184,10 @@ namespace FileCompressionCSharp
                 SelectedPath.Text = $"File compressed successfully to: {outputPath}";
             }
         }
+
+        // Date Created: 10/6/2025 5:56 PM
+        // Last Modified: N/A
+        // Description: Handles the Decompress button click to decompress the selected file
         private void Decompress_Click(object sender, RoutedEventArgs e)
         {
             bool success = false;
@@ -203,7 +214,6 @@ namespace FileCompressionCSharp
         {            
             FlipButtons(true);
         }
-
 
         // Date Created: 10/3/2025 10:22 PM
         // Last Modified: 10/13/20205 5:15 PM - Refactored to use ArchiveTypeChecker and handle Algorithm selection state
@@ -259,7 +269,7 @@ namespace FileCompressionCSharp
                 // When file is an archive, user shouldn't change algorithm for compression
                 ResetAlgorithmSelection();
 
-                // Reset algorithm selection (optional)
+                // Reset algorithm selection 
                 // algorithim = ArchiveType.None;
 
                 return;
@@ -299,7 +309,6 @@ namespace FileCompressionCSharp
             btnDecompress.Opacity = 0.5;
             btnDecompress.ToolTip = "Not an archive file";
         }
-
 
         // Algorithm check - RadioButtonEvents
         private void btnHuffman_Checked(object sender, RoutedEventArgs e)

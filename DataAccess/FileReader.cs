@@ -10,6 +10,7 @@ namespace DataAccess
 {
     public class FileReader : FileReaderInterface
     {
+        // 
         public byte[] FileToByteArray(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -27,8 +28,7 @@ namespace DataAccess
                 return File.ReadAllBytes(filePath);
             }
             catch (Exception ex)
-            {
-                // Log the exception if logging is set up
+            {                
                 throw new IOException("An error occurred while reading the file.", ex);
             }   
         }
