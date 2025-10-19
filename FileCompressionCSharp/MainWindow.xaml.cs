@@ -164,13 +164,13 @@ namespace FileCompressionCSharp
         // Date Created: 10/6/2025 5:56 PM
         // Last Modified: N/A
         // Description: Handles the Compress button click to compress the selected file
-        private void Compress_Click(object sender, RoutedEventArgs e)
+        private async void Compress_Click(object sender, RoutedEventArgs e)
         {
             string outputPath = CreateOutputPath(selectedPath, algorithim);
             bool success = false;
             try
             {
-                success = _huffman.Compress(selectedPath, outputPath);
+                success = await _huffman.Compress(selectedPath, outputPath, default);
             }
             catch (Exception ex)
             {
@@ -188,12 +188,12 @@ namespace FileCompressionCSharp
         // Date Created: 10/6/2025 5:56 PM
         // Last Modified: N/A
         // Description: Handles the Decompress button click to decompress the selected file
-        private void Decompress_Click(object sender, RoutedEventArgs e)
+        private async void Decompress_Click(object sender, RoutedEventArgs e)
         {
             bool success = false;
             try
             {
-                success = _huffman.Decompress(selectedPath);
+                success = await _huffman.Decompress(selectedPath, default);
             }
             catch (Exception ex)
             {

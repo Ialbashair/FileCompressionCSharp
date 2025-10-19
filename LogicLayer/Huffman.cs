@@ -1,13 +1,15 @@
-﻿using System;
+﻿using DataAccess;
+using DataAccessInterface;
+using LogicLayerInterface;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using LogicLayerInterface;
-using DataAccessInterface;
-using DataAccess;
-
 namespace LogicLayer
 {
     public class Huffman : IHuffman
@@ -119,26 +121,41 @@ namespace LogicLayer
         // Encode input data using the code table
         private byte[] EncodeData(byte[] input, Dictionary<byte, string> codes)
         {
-            var bitString = new StringBuilder();
-
-            foreach (byte b in input)
+            using (var ms = new MemoryStream())
             {
-                bitString.Append(codes[b]);
-            }
+                int bitPos = 0;
+                byte crntByte = 0;
 
-            int numBytes = (bitString.Length + 7) / 8;
-            byte[] output = new byte[numBytes];
-
-            for (int i = 0; i < bitString.Length; i++)
-            {
-                if (bitString[i] == '1')
+                foreach (byte b in input)
                 {
-                    output[i / 8] |= (byte)(1 << (7 - (i % 8)));
-                }
-            }
+                    string code = codes[b];
+                    foreach (char bit in code)
+                    {
+                        if (bit == '1')
+                        {
+                            crntByte |= (byte)(1 << (7 - bitPos));
+                        }
+                        bitPos++;
 
-            return output;
+                        if (bitPos == 8)
+                        {
+                            ms.WriteByte(crntByte);
+                            crntByte = 0;
+                            bitPos = 0;
+                        }
+                    }
+                }
+
+                // Write any remaining bits
+                if (bitPos > 0)
+                {
+                    ms.WriteByte(crntByte);
+                }
+
+                return ms.ToArray();
+            }
         }
+
         // Write compressed data to a file with error handling
         public bool WriteCompressedFile(byte[] compressedData, string outputPath)
         {
@@ -253,92 +270,101 @@ namespace LogicLayer
         }
 
         // Main compress method
-        public bool Compress(string filePath, string outputPath)
+        public async Task<bool> Compress(string filePath, string outputPath, CancellationToken ct = default)
         {
-            byte[] inputData = LoadInputData(filePath);
-            var frequencyTable = BuildFrequencyTable(inputData);
-            var huffmanTree = BuildTree(frequencyTable);
-            var codes = BuildCodeTable(huffmanTree);
-            var compressedData = EncodeData(inputData, codes);
-
-            // Get file name
-            string fileName = Path.GetFileName(filePath);
-            byte[] fileNameBytes = Encoding.UTF8.GetBytes(fileName);
-            int nameLength = fileNameBytes.Length;
-
-            // Serialize frequency table
-            var freqTableBytes = SerializeFrequencyTable(frequencyTable);
-
-            // Combine headers
-            using (var ms = new MemoryStream())
-            using (var writer = new BinaryWriter(ms))
+            // Run heavy work on background thread to avoid blocking STA / UI thread.
+            return await Task.Run(() =>
             {
-                writer.Write(nameLength); // Length of file name
-                writer.Write(fileNameBytes); // File name
-                writer.Write(freqTableBytes.Length); // Length of frequency table                
-                writer.Write(freqTableBytes); // Frequency table
-                writer.Write(compressedData); // Compressed data
+                ct.ThrowIfCancellationRequested();
 
-                return WriteCompressedFile(ms.ToArray(), outputPath);
-            }
+                byte[] inputData = LoadInputData(filePath); // keep using your FileReader if needed
+                var frequencyTable = BuildFrequencyTable(inputData);
+                var huffmanTree = BuildTree(frequencyTable);
+                var codes = BuildCodeTable(huffmanTree);
+                var compressedData = EncodeData(inputData, codes);
 
+                // filename and meta
+                string fileName = Path.GetFileName(filePath);
+                byte[] fileNameBytes = Encoding.UTF8.GetBytes(fileName);
+                int nameLength = fileNameBytes.Length;
+                var freqTableBytes = SerializeFrequencyTable(frequencyTable);
+
+                using (var ms = new MemoryStream())
+                using (var writer = new BinaryWriter(ms))
+                {
+                    writer.Write(nameLength);
+                    writer.Write(fileNameBytes);
+                    writer.Write(freqTableBytes.Length);
+                    writer.Write(freqTableBytes);
+                    writer.Write(compressedData);
+
+                    // Use synchronous file write here because we're already on a background thread,
+                    // but you can replace with WriteAllBytesAsync if you want true async IO.
+                    return WriteCompressedFile(ms.ToArray(), outputPath);
+                }
+            }, ct).ConfigureAwait(false);
             // Desired final layout:
             // | Int32 FileNameLength | FileNameBytes | Int32 FreqTableLength | FreqTableBytes | CompressedData |
         }
 
         // Main decompress method
-        public bool Decompress(string filePath)
+        public async Task<bool> Decompress(string filePath, CancellationToken ct = default)
         {
-            byte[] compressedData = LoadInputData(filePath);
+            // Load compressed bytes on background thread
+            var compressedData = await Task.Run(() => LoadInputData(filePath), ct).ConfigureAwait(false);
 
             using (var ms = new MemoryStream(compressedData))
             using (var reader = new BinaryReader(ms))
             {
-                // Read original file name
                 int nameLength = reader.ReadInt32();
                 string originalFileName = Encoding.UTF8.GetString(reader.ReadBytes(nameLength));
 
-                // Read frequency table
                 int freqTableLength = reader.ReadInt32();
-                byte[] freqTableBytes = reader.ReadBytes(freqTableLength);
+                var freqTableBytes = reader.ReadBytes(freqTableLength);
                 var freqTable = DeserializeFrequencyTable(freqTableBytes);
 
-                // Rebuild Huffman tree
                 var root = BuildTree(freqTable);
 
-                // Remaining bytes = compressed data
+                // Remaining bytes = compressed payload
                 var remainingBytes = reader.ReadBytes((int)(ms.Length - ms.Position));
-                var bitString = new StringBuilder();
 
-                foreach (byte b in remainingBytes)
-                {
-                    for (int i = 7; i >= 0; i--)
-                    {
-                        bitString.Append((b & (1 << i)) != 0 ? '1' : '0');
-                    }
-                }
-
-                // Decode bits using Huffman tree
+                // Decode on the fly
                 var output = new List<byte>();
                 var current = root;
 
-                foreach (char bit in bitString.ToString())
+                for (int byteIndex = 0; byteIndex < remainingBytes.Length; byteIndex++)
                 {
-                    current = bit == '0' ? current.Left : current.Right;
+                    ct.ThrowIfCancellationRequested();
 
-                    if (current.IsLeaf)
+                    byte b = remainingBytes[byteIndex];
+                    for (int bit = 7; bit >= 0; bit--)
                     {
-                        output.Add(current.Symbol.Value);
-                        current = root;
+                        bool bitIsOne = (b & (1 << bit)) != 0;
+                        current = bitIsOne ? current.Right : current.Left;
+
+                        if (current == null)
+                        {
+                            // Defensive: malformed data
+                            throw new InvalidDataException("Huffman decoding failed: encountered null node.");
+                        }
+
+                        if (current.IsLeaf)
+                        {
+                            if (!current.Symbol.HasValue)
+                                throw new InvalidDataException("Huffman decoding failed: leaf without symbol.");
+
+                            output.Add(current.Symbol.Value);
+                            current = root;
+                        }
                     }
                 }
 
-                // Build output path
+                // Write decompressed file off the UI thread
                 string outputDir = Path.GetDirectoryName(filePath) ?? "";
                 string outputPath = Path.Combine(outputDir, originalFileName);
 
-                // Write decompressed data to file
-                return WriteDecompressedFile(outputPath, output.ToArray());
+                // Use async write to avoid blocking threadpool thread for big files
+                return await Task.Run(() => WriteDecompressedFile(outputPath, output.ToArray()), ct).ConfigureAwait(false);
             }
         }
     }    
