@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="IArchiveTypeChecker.cs" />
     <Compile Include="IHuffman.cs" />
+    <Compile Include="ISlidingWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
