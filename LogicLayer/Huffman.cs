@@ -26,15 +26,18 @@ namespace LogicLayer
         }
 
         FileReaderInterface _fileReader;
+        FileWriterInterface _fileWriter;
 
         public Huffman()
         {
             _fileReader = new FileReader();
+            _fileWriter = new FileWriter();
         }
 
-        public Huffman(FileReaderInterface fileReader)
+        public Huffman(FileReaderInterface fileReader, FileWriterInterface fileWriter)
         {
             _fileReader = fileReader;
+            _fileWriter = fileWriter;
         }
 
         // Build frequency table from input data
@@ -163,15 +166,7 @@ namespace LogicLayer
 
             try
             {
-                // Check if directory exists, if not create it
-                string directory = Path.GetDirectoryName(outputPath);
-                if (directory != null && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory); // Create.
-                }
-
-                // Write file data.
-                File.WriteAllBytes(outputPath, compressedData);
+                _fileWriter.WriteCompressedFile(compressedData, outputPath);
                 success = true;
             }
             catch (UnauthorizedAccessException)
@@ -248,23 +243,16 @@ namespace LogicLayer
         // Write decompressed data to a file with error handling
         public bool WriteDecompressedFile(string outputPath, byte[] decompressedData)
         {
-
-            if (string.IsNullOrWhiteSpace(outputPath))
-                throw new ArgumentException("Output path cannot be null or empty.", nameof(outputPath));
-
-            if (decompressedData == null || decompressedData.Length == 0)
-                throw new ArgumentException("Decompressed data cannot be null or empty.", nameof(decompressedData));
-
             bool success = false;
-
             try
             {
-                File.WriteAllBytes(outputPath, decompressedData);
+                _fileWriter.WriteDecompressedFile(decompressedData, outputPath);
                 success = true;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                throw new IOException("An error occurred while writing the decompressed file.", ex);
+
+                throw new IOException("Failed to write to file: ", e);
             }
             return success;
         }

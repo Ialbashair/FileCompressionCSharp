@@ -16,6 +16,8 @@ namespace LogicLayer
     public class SlidingWindow : ISlidingWindow
     {
         private readonly FileReaderInterface _fileReader;
+        private readonly FileWriterInterface _fileWriter;
+
         private const int DefaultWindowSize = 4096; // 4KB
         private const int DefaultLookAheadBufferSize = 18; // bytes
 
@@ -26,12 +28,26 @@ namespace LogicLayer
             public byte NextSymbol { get; set; }
         }
 
-        private List<Match> ComrpessData(byte[] input, int windowSize, int lookAheadSize) 
+        
+        public SlidingWindow() 
+        {
+            _fileReader = new FileReader();
+            _fileWriter = new FileWriter();
+
+        }
+
+        public SlidingWindow(FileReaderInterface fileReader, FileWriterInterface fileWriter) 
+        {
+            _fileReader = fileReader;
+            _fileWriter = fileWriter;
+        }
+
+        private List<Match> ComrpessData(byte[] input, int windowSize, int lookAheadSize)
         {
             var matches = new List<Match>();
             int pos = 0;
 
-            while (pos < input.Length) 
+            while (pos < input.Length)
             {
                 int bestLength = 0;
                 int bestOffset = 0;
@@ -39,7 +55,7 @@ namespace LogicLayer
                 int windowStart = Math.Max(0, pos - windowSize);
                 int windowLength = pos - windowStart;
 
-                for (int offset = 1; offset <= windowLength; offset++) 
+                for (int offset = 1; offset <= windowLength; offset++)
                 {
                     int matchLength = 0;
 
@@ -48,7 +64,7 @@ namespace LogicLayer
                         matchLength++;
                     }
 
-                    if (matchLength > bestLength) 
+                    if (matchLength > bestLength)
                     {
                         bestLength = matchLength;
                         bestOffset = offset;
@@ -68,22 +84,53 @@ namespace LogicLayer
             return matches;
         }
 
-        private byte[] DecompressData(List<Match> matches) 
+        private byte[] DecompressData(List<Match> matches)
         {
-            var output = new List <byte> 
+            var output = new List<byte>();
+
+            foreach (var match in matches)
+            {
+                if (match.Offset > 0)
+                {
+                    int startPoint = output.Count - match.Offset;
+                    for (int i = 0; i < match.Length; i++)
+                    {
+                        output.Add(output[startPoint + i]);
+                    }
+                }
+
+
+                if (match.NextSymbol != 0)
+                {
+                    output.Add(match.NextSymbol);
+                }
+            }
+
+            return output.ToArray();
+
         }
 
-        public SlidingWindow() 
+        public bool WriteCompressedFile(byte[] compressedData, string outputPath) 
         {
-            _fileReader = new FileReader();
+            try
+            {
+                // Check if directory exists, if not create it
+                string directory = Path.GetDirectoryName(outputPath);
+                if (directory != null && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory); // Create.
+                }
+
+                File.WriteAllBytes(outputPath, compressedData);
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                throw new IOException("Failed to write compressed file: ", e); // shouldn't ever be called 
+            }
         }
 
-        public SlidingWindow(FileReaderInterface fileReader) 
-        {
-            _fileReader = fileReader;
-        }
-
-        
         public Task<bool> Compress(string filePath, string outputPath, CancellationToken ct)
         {
             throw new NotImplementedException();
