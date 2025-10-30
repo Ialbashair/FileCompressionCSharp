@@ -19,12 +19,16 @@ namespace FileCompressionCSharp
         private string selectedPath = string.Empty;
         private bool fileSelected = false;        
         private ArchiveType algorithim = ArchiveType.None;
+
         private IHuffman _huffman = null;
-        public MainWindow(IArchiveTypeChecker checker, IHuffman huffman)
+        private ISlidingWindow _slidingWindow = null;
+        public MainWindow(IArchiveTypeChecker checker, IHuffman huffman, ISlidingWindow slidingWindow)
         {
             InitializeComponent();
             _checker = checker;           
-            _huffman = huffman; // Assuming Huffman implements IHuffman
+            _huffman = huffman;
+            _slidingWindow = slidingWindow;
+
 
             ResetAlgorithmSelection();
         }
@@ -168,20 +172,42 @@ namespace FileCompressionCSharp
         {
             string outputPath = CreateOutputPath(selectedPath, algorithim);
             bool success = false;
-            try
-            {
-                success = await _huffman.Compress(selectedPath, outputPath, default);
-            }
-            catch (Exception ex)
-            {
 
-                MessageBox.Show("Failed to compress file.", ex.Message);
-            }
-
-            if (success) 
+            if (btnHuffman.IsChecked == true)
             {
-                SelectedPath.Foreground = Brushes.Green;
-                SelectedPath.Text = $"File compressed successfully to: {outputPath}";
+                try
+                {
+                    success = await _huffman.Compress(selectedPath, outputPath, default);
+                }
+                catch (Exception ex)
+                {
+
+                    MessageBox.Show("Failed to compress file.", ex.Message);
+                }
+
+                if (success)
+                {
+                    SelectedPath.Foreground = Brushes.Green;
+                    SelectedPath.Text = $"File compressed successfully to: {outputPath}";
+                }
+            }
+            else if (btnSlidingWindow.IsChecked == true) 
+            {
+                try
+                {
+                    success = await _slidingWindow.Compress(selectedPath, outputPath, default);
+                }
+                catch (Exception ex)
+                {
+
+                    MessageBox.Show("Failed to compress file.", ex.Message);
+                }
+
+                if (success)
+                {
+                    SelectedPath.Foreground = Brushes.Green;
+                    SelectedPath.Text = $"File compressed successfully to: {outputPath}";
+                }
             }
         }
 
@@ -329,6 +355,8 @@ namespace FileCompressionCSharp
         {
             btnBoth.IsChecked = false;
             btnHuffman.IsChecked = false;
+
+            algorithim = ArchiveType.SlidingWindow;
 
             // Enable Compress button
             btnCompress.IsEnabled = true;

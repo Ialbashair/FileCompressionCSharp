@@ -10,6 +10,7 @@ namespace DataObjects
     {
         None,
         Huffman,
+        SlidingWindow,
         Zip,
         Rar,
         SevenZip,
@@ -25,8 +26,10 @@ namespace DataObjects
             switch (type)
             {                
                 case ArchiveType.Huffman: return ".huff";
+                case ArchiveType.SlidingWindow: return ".swc";
                 default: return string.Empty;
             }
+
         }
     }
 }

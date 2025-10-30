@@ -19,6 +19,7 @@ namespace FileCompressionCSharp
             // Register interfaces and their implementations
             services.AddSingleton<IArchiveTypeChecker, ArchiveTypeChecker>();
             services.AddSingleton<IHuffman, Huffman>();
+            services.AddSingleton<ISlidingWindow, SlidingWindow>();
 
             // Register your MainWindow with its dependencies
             services.AddSingleton<MainWindow>();
