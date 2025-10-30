@@ -265,13 +265,13 @@ namespace LogicLayer
             {
                 ct.ThrowIfCancellationRequested();
 
-                byte[] inputData = LoadInputData(filePath); // keep using your FileReader if needed
+                byte[] inputData = LoadInputData(filePath); // keep FileReader if needed
                 var frequencyTable = BuildFrequencyTable(inputData);
                 var huffmanTree = BuildTree(frequencyTable);
                 var codes = BuildCodeTable(huffmanTree);
                 var compressedData = EncodeData(inputData, codes);
 
-                // filename and meta
+                // filename and metavtgh
                 string fileName = Path.GetFileName(filePath);
                 byte[] fileNameBytes = Encoding.UTF8.GetBytes(fileName);
                 int nameLength = fileNameBytes.Length;

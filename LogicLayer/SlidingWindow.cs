@@ -42,7 +42,42 @@ namespace LogicLayer
             _fileWriter = fileWriter;
         }
 
-        private List<Match> ComrpessData(byte[] input, int windowSize, int lookAheadSize)
+        private List<Match> DecodeMatches(byte[] data)
+        {
+            var matches = new List<Match>();
+            using (var ms = new MemoryStream(data))
+            using (var br = new BinaryReader(ms))
+            {
+                while (ms.Position < ms.Length)
+                {
+                    matches.Add(new Match
+                    {
+                        Offset = br.ReadUInt16(),
+                        Length = br.ReadByte(),
+                        NextSymbol = br.ReadByte()
+                    });
+                }
+            }
+            return matches;
+        }
+
+        private byte[] EncodeMatches(List<Match> matches) 
+        {
+            using (var ms = new MemoryStream())
+            using (var bw = new BinaryWriter(ms))
+            {
+                foreach (var match in matches) 
+                {
+                    bw.Write((ushort)match.Offset);
+                    bw.Write((byte)match.Length);
+                    bw.Write(match.NextSymbol);
+                }
+                return ms.ToArray();
+            }
+            
+        }
+
+        private List<Match> CompressData(byte[] input, int windowSize, int lookAheadSize)
         {
             var matches = new List<Match>();
             int pos = 0;
@@ -79,6 +114,8 @@ namespace LogicLayer
                     Length = bestLength,
                     NextSymbol = nextSymbol
                 });
+
+                pos += bestLength + 1;
             }
 
             return matches;
@@ -121,7 +158,7 @@ namespace LogicLayer
                     Directory.CreateDirectory(directory); // Create.
                 }
 
-                File.WriteAllBytes(outputPath, compressedData);
+                _fileWriter.WriteCompressedFile(compressedData, outputPath);
                 return true;
             }
             catch (Exception e)
@@ -131,14 +168,46 @@ namespace LogicLayer
             }
         }
 
-        public Task<bool> Compress(string filePath, string outputPath, CancellationToken ct)
+        public bool WriteDecompressedFile(byte[] compressedData, string outputPath)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Check if directory exists, if not create it
+                string directory = Path.GetDirectoryName(outputPath);
+                if (directory != null && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory); // Create.
+                }
+
+                _fileWriter.WriteDecompressedFile(compressedData, outputPath);
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                throw new IOException("Failed to write decompressed file: ", e); // shouldn't ever be called 
+            }
         }
 
-        public Task<bool> DeCompress(string filePath, string outputPath, CancellationToken ct)
+
+        public async Task<bool> Compress(string filePath, string outputPath, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            byte[] input = await _fileReader.ReadAllBytesAsync(filePath, ct);
+
+            var matches = CompressData(input, DefaultWindowSize, DefaultLookAheadBufferSize);
+            byte[] encoded = EncodeMatches(matches);
+
+            return WriteCompressedFile(encoded, outputPath);            
+        }
+
+        public async Task<bool> DeCompress(string filePath, string outputPath, CancellationToken ct)
+        {
+            byte[] compressed = await _fileReader.ReadAllBytesAsync(filePath, ct);
+            
+            var matches = DecodeMatches(compressed);
+            byte[] decompressed = DecompressData(matches);
+
+            return WriteDecompressedFile(decompressed, outputPath);
         }
     }
 }
