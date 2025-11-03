@@ -11,6 +11,6 @@ namespace LogicLayerInterface
     {
         Task<bool> Compress(string filePath, string outputPath, CancellationToken ct);
 
-        Task<bool> DeCompress(string filePath, string outputPath, CancellationToken ct);
+        Task<bool> Decompress(string filePath, CancellationToken ct);
     }
 }

@@ -212,25 +212,59 @@ namespace FileCompressionCSharp
         }
 
         // Date Created: 10/6/2025 5:56 PM
-        // Last Modified: N/A
+        // Last Modified: 11/02/2025 - Refactored to auto-detect and use correct algorithm
         // Description: Handles the Decompress button click to decompress the selected file
         private async void Decompress_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(selectedPath) || !File.Exists(selectedPath))
+            {
+                MessageBox.Show("Please select a valid file first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Automatically detect which algorithm was used to compress the file
+            ArchiveType detectedType = _checker.GetArchiveType(selectedPath);
+
+            if (detectedType == ArchiveType.None)
+            {
+                MessageBox.Show("The selected file is not a recognized archive type.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             bool success = false;
+
             try
             {
-                success = await _huffman.Decompress(selectedPath, default);
+                switch (detectedType)
+                {
+                    case ArchiveType.Huffman:
+                        success = await _huffman.Decompress(selectedPath, default);
+                        break;
+
+                    case ArchiveType.SlidingWindow:
+                        success = await _slidingWindow.Decompress(selectedPath, default);
+                        break;
+
+                 /*   case ArchiveType.Both:                       
+                        string tempPath = Path.ChangeExtension(selectedPath, ".tmp");
+                        if (await _huffman.Decompress(selectedPath, default))
+                        {
+                            success = await _slidingWindow.Decompress(tempPath, default);
+                            try { File.Delete(tempPath); } catch { *//* ignore *//* }
+                        }
+                        break;*/
+                }
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show("Failed to decompress file.", ex.Message);
+                MessageBox.Show($"Failed to decompress file: {ex.Message}", "Decompression Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
             if (success)
             {
                 SelectedPath.Foreground = Brushes.Green;
-                SelectedPath.Text = $"File Decompressed successfully to: {selectedPath}";
-            }        
+                SelectedPath.Text = $"File decompressed successfully using {detectedType}!";
+            }
         }
 
         // Date Created: 9/29/2025 7:45 PM
